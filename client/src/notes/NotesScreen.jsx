@@ -72,6 +72,9 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
   const archivingRef = useRef(false);
   const listHeadingRef = useRef(null);
   const newButtonRef = useRef(null);
+  const listControllerRef = useRef(null);
+  const viewRef = useRef(null);
+  viewRef.current = { status, query: debouncedQuery };
 
   const dirty = (mode === 'create' || mode === 'edit') && !sameDraft(draft, baseline);
 
@@ -86,6 +89,7 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
   // are aborted, so a slow earlier search cannot overwrite a newer one.
   useEffect(() => {
     const controller = new AbortController();
+    listControllerRef.current = controller;
     setList((prev) => ({ ...prev, loading: true }));
     api
       .listNotes({ status, q: debouncedQuery.trim(), signal: controller.signal })
@@ -128,13 +132,19 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
   // Upsert a note into the visible list if it still belongs there.
   const placeInList = useCallback(
     (note) => {
+      // A mutation can finish after the user changes the search or status.
+      // Invalidate snapshots taken before the write and reconcile the current view.
+      listControllerRef.current?.abort();
       setList((prev) => {
+        const view = viewRef.current;
         const others = prev.notes.filter((n) => n.id !== note.id);
-        const notes = matchesView(note, status, debouncedQuery) ? [...others, note].sort(compareNotes) : others;
+        const notes = prev.status === view.status && matchesView(note, view.status, view.query)
+          ? [...others, note].sort(compareNotes) : others;
         return { ...prev, notes };
       });
+      setReloadKey((key) => key + 1);
     },
-    [status, debouncedQuery],
+    [],
   );
 
   // Selection ---------------------------------------------------------------

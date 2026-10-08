@@ -19,6 +19,25 @@ async function openNote(user, title) {
 }
 
 describe('NotesScreen', () => {
+  it('reconciles a mutation with the current tab when the filter changes while saving', async () => {
+    let finishSave;
+    const note = { id: 1, title: 'Current handover', body: 'Opening', author: 'Mira', archived: false, updatedAt: new Date().toISOString() };
+    const api = {
+      listNotes: vi.fn().mockImplementation(async ({status}) => status === 'active' ? [note] : []),
+      updateNote: vi.fn().mockImplementation(() => new Promise(resolve => { finishSave = resolve; })),
+    };
+    const user = userEvent.setup();
+    render(<NotesScreen api={api} theme="light" onToggleTheme={() => {}} />);
+    await openNote(user, 'Current handover');
+    await user.type(screen.getByLabelText('Note'), ' reviewed');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await user.click(screen.getByRole('radio', { name: 'Archived' }));
+    await waitFor(() => expect(within(list()).queryByRole('listitem')).not.toBeInTheDocument());
+    finishSave({ ...note, body: 'Opening reviewed' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save changes' })).not.toHaveAttribute('aria-busy', 'true'));
+    expect(within(list()).queryByRole('listitem')).not.toBeInTheDocument();
+  });
+
   it('ignores an obsolete list response even when cancellation arrives after resolution', async () => {
     let resolveOld;
     const api = { listNotes: vi.fn()
