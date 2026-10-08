@@ -233,10 +233,22 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
     }
     if (!creating && !dirty) return;
 
+    const payload = normalizeDraft(draft);
+    // Trimming title/author can remove the draft's only difference. Settle
+    // locally: the API requires a nonempty PATCH, and body stays verbatim.
+    if (!creating && sameDraft(payload, baseline)) {
+      setDraft(payload);
+      setErrors({});
+      setShowErrors(false);
+      setFailure(null);
+      setSavedMessage('No changes to save');
+      announce('No changes to save.');
+      return;
+    }
+
     savingRef.current = true;
     setSaving(true);
     setFailure(null);
-    const payload = normalizeDraft(draft);
     try {
       let saved;
       if (creating) {

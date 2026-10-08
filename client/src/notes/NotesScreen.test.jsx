@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { createFixtureClient } from './fixtureClient.js';
+import { createHttpClient } from './httpClient.js';
 import { NotesScreen } from './NotesScreen.jsx';
 
 function setup(options = {}) {
@@ -19,6 +20,60 @@ async function openNote(user, title) {
 }
 
 describe('NotesScreen', () => {
+  it.each([
+    ['Title', '  Handover  '],
+    ['Written by', '  Mira  '],
+  ])('settles a surrounding-whitespace-only %s edit without an HTTP write', async (label, value) => {
+    const stamp = '2026-10-08T12:00:00Z';
+    const note = { id: 1, title: 'Handover', body: '  Opening\n\n  side door  ', author: 'Mira', archived: false, createdAt: stamp, updatedAt: stamp };
+    const fetchImpl = vi.fn(async (_path, options = {}) => {
+      if (!options.method) return new Response(JSON.stringify({ notes: [note] }));
+      return new Response(JSON.stringify({ error: { code: 'validation_error', message: 'Provide a nonempty JSON object.' } }), { status: 400 });
+    });
+    const user = userEvent.setup();
+    render(<NotesScreen api={createHttpClient({ fetchImpl })} theme="light" onToggleTheme={() => {}} />);
+    await openNote(user, 'Handover');
+    await user.clear(screen.getByLabelText(label));
+    await user.type(screen.getByLabelText(label), value);
+    const save = screen.getByRole('button', { name: 'Save changes' });
+    expect(save).not.toHaveAttribute('aria-disabled', 'true');
+    await user.click(save);
+    expect(screen.getByLabelText('Title')).toHaveValue('Handover');
+    expect(screen.getByLabelText('Written by')).toHaveValue('Mira');
+    expect(screen.getByLabelText('Note')).toHaveValue('  Opening\n\n  side door  ');
+    expect(save).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Archive' })).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(fetchImpl.mock.calls.filter(([, options]) => options.method)).toHaveLength(0);
+    await user.click(within(screen.getByRole('banner')).getByRole('button', { name: 'New note' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('form', { name: /new note/i })).toBeInTheDocument();
+  });
+
+  it('sends a body-whitespace change exactly while normalizing unchanged title and author', async () => {
+    const stamp = '2026-10-08T12:00:00Z';
+    const note = { id: 1, title: 'Handover', body: 'Opening', author: 'Mira', archived: false, createdAt: stamp, updatedAt: stamp };
+    const fetchImpl = vi.fn(async (_path, options = {}) => {
+      if (!options.method) return new Response(JSON.stringify({ notes: [note] }));
+      return new Response(JSON.stringify({ note: { ...note, ...JSON.parse(options.body) } }));
+    });
+    const user = userEvent.setup();
+    render(<NotesScreen api={createHttpClient({ fetchImpl })} theme="light" onToggleTheme={() => {}} />);
+    await openNote(user, 'Handover');
+    await user.type(screen.getByLabelText('Title'), ' ');
+    await user.type(screen.getByLabelText('Written by'), ' ');
+    await user.type(screen.getByLabelText('Note'), '  {enter}  ');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save changes' })).toHaveAttribute('aria-disabled', 'true'));
+    const writes = fetchImpl.mock.calls.filter(([, options]) => options.method === 'PATCH');
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(writes[0][1].body)).toEqual({ body: 'Opening  \n  ' });
+    expect(screen.getByLabelText('Note')).toHaveValue('Opening  \n  ');
+    expect(screen.getByLabelText('Title')).toHaveValue('Handover');
+    expect(screen.getByLabelText('Written by')).toHaveValue('Mira');
+  });
+
   it('reconciles a mutation with the current tab when the filter changes while saving', async () => {
     let finishSave;
     const stamp = new Date().toISOString();
