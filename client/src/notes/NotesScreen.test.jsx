@@ -21,7 +21,8 @@ async function openNote(user, title) {
 describe('NotesScreen', () => {
   it('reconciles a mutation with the current tab when the filter changes while saving', async () => {
     let finishSave;
-    const note = { id: 1, title: 'Current handover', body: 'Opening', author: 'Mira', archived: false, updatedAt: new Date().toISOString() };
+    const stamp = new Date().toISOString();
+    const note = { id: 1, title: 'Current handover', body: 'Opening', author: 'Mira', archived: false, createdAt: stamp, updatedAt: stamp };
     const api = {
       listNotes: vi.fn().mockImplementation(async ({status}) => status === 'active' ? [note] : []),
       updateNote: vi.fn().mockImplementation(() => new Promise(resolve => { finishSave = resolve; })),
