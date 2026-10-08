@@ -90,13 +90,14 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
     api
       .listNotes({ status, q: debouncedQuery.trim(), signal: controller.signal })
       .then((notes) => {
+        if (controller.signal.aborted) return;
         setList({ notes, loaded: true, loading: false, error: null, status });
         if (debouncedQuery.trim()) {
           announce(`${notes.length} ${notes.length === 1 ? 'note matches' : 'notes match'} “${debouncedQuery.trim()}”.`);
         }
       })
       .catch((error) => {
-        if (isAbortError(error)) return;
+        if (controller.signal.aborted || isAbortError(error)) return;
         setList((prev) => {
           // Keep the last list only if it belongs to the same status tab;
           // otherwise active notes would show under "Archived".
@@ -138,6 +139,7 @@ export function NotesScreen({ api, theme, onToggleTheme }) {
 
   // Selection ---------------------------------------------------------------
   function guardDiscard(action) {
+    if (savingRef.current || archivingRef.current) return;
     if (dirty) setConfirm({ action });
     else action();
   }

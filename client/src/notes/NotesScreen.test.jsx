@@ -19,6 +19,20 @@ async function openNote(user, title) {
 }
 
 describe('NotesScreen', () => {
+  it('ignores an obsolete list response even when cancellation arrives after resolution', async () => {
+    let resolveOld;
+    const api = { listNotes: vi.fn()
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockResolvedValue([{ id: 99, title: 'Archived handover', body: 'Done', author: 'Mira', archived: true, updatedAt: new Date().toISOString() }]) };
+    const user = userEvent.setup();
+    render(<NotesScreen api={api} theme="light" onToggleTheme={() => {}} />);
+    await user.click(screen.getByRole('radio', { name: 'Archived' }));
+    await screen.findByRole('button', { name: /Archived handover/ });
+    resolveOld([{ id: 1, title: 'Obsolete active note', body: 'Old', author: 'Mira', archived: false }]);
+    await waitFor(() => expect(screen.queryByText('Obsolete active note')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Archived handover/ })).toBeInTheDocument();
+  });
+
   it('lists active notes in contract order and filters archived', async () => {
     const { user } = setup();
     const items = await within(list()).findAllByRole('listitem');
