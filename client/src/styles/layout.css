@@ -1,0 +1,276 @@
+/*
+ * Screen composition.
+ * - wide (>= 48rem): header + two panes (list | sheet), each scrolls alone.
+ * - narrow (< 48rem): one pane at a time, chosen by .app[data-pane].
+ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ---------------------------------------------------------------- Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex: none;
+  height: var(--header-height);
+  padding: 0 var(--space-6);
+  border-bottom: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.app-header__logo {
+  position: relative;
+  width: 1.75rem;
+  height: 2rem;
+  flex: none;
+  border-radius: 6px;
+  background: var(--color-accent);
+}
+
+.app-header__logo::after {
+  content: '';
+  position: absolute;
+  left: 0.45rem;
+  right: 0.45rem;
+  top: 0.6rem;
+  height: 0.7rem;
+  border-top: 2px solid var(--color-accent-contrast);
+  border-bottom: 2px solid var(--color-accent-contrast);
+  opacity: 0.9;
+}
+
+.app-header__title {
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------- Layout */
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--list-pane-width) minmax(0, 1fr);
+}
+
+.pane {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pane--list {
+  border-right: var(--border-width) solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.pane__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--color-bg);
+}
+
+.pane__toolbar .segmented {
+  justify-self: start;
+}
+
+.pane__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-6) var(--space-3);
+}
+
+.pane__heading h2 {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.pane__count {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.pane--detail {
+  padding: var(--space-8) var(--space-8) 0;
+}
+
+/* End spacing as content, not padding: a sticky footer sticks to the content
+   box, so bottom padding would leave fields visible beneath it. */
+.pane--detail::after {
+  content: '';
+  display: block;
+  height: var(--space-10);
+}
+
+/* --------------------------------------------------------------- Tablet */
+@media (max-width: 63.99rem) {
+  .app-header {
+    padding: 0 var(--space-4);
+  }
+
+  .pane--detail {
+    padding: var(--space-5) var(--space-5) 0;
+  }
+
+  .pane--detail::after {
+    height: var(--space-8);
+  }
+
+  .sheet {
+    padding: var(--space-5) var(--space-6) 0;
+  }
+
+  .sheet--reader {
+    padding-bottom: var(--space-6);
+  }
+
+  .sheet__footer {
+    margin: 0 calc(var(--space-6) * -1);
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .action-bar__shortcut {
+    display: none;
+  }
+
+  .pane__heading {
+    padding-inline: var(--space-5);
+  }
+}
+
+/* ---------------------------------------------------------------- Phone */
+@media (max-width: 47.99rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app[data-pane='list'] .pane--detail,
+  .app[data-pane='detail'] .pane--list {
+    display: none;
+  }
+
+  .pane--list {
+    border-right: 0;
+  }
+
+  .pane__toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: var(--space-3) var(--space-3) var(--space-2);
+  }
+
+  .pane__heading {
+    padding: var(--space-3) var(--space-5) var(--space-2);
+  }
+
+  .note-list {
+    padding-inline: var(--space-1);
+  }
+
+  .segmented__option span {
+    padding: 0 var(--space-3);
+  }
+
+  .pane--detail {
+    padding: 0;
+    background: var(--color-surface);
+  }
+
+  .pane--detail::after {
+    display: none;
+  }
+
+  .sheet {
+    gap: var(--space-4);
+    max-width: none;
+    min-height: 100%;
+    padding: var(--space-3) var(--space-4) 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .sheet--reader {
+    padding-bottom: var(--space-8);
+  }
+
+  .sheet__back {
+    display: inline-flex;
+  }
+
+  .sheet__footer {
+    margin: auto calc(var(--space-4) * -1) 0;
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+
+  .sheet__footer .btn--primary {
+    flex: 1;
+  }
+
+  .field--title .field__control {
+    font-size: 1.3125rem;
+  }
+
+  .field--author {
+    max-width: none;
+  }
+
+  textarea.field__control {
+    min-height: 14rem;
+  }
+
+  .reader__title {
+    font-size: var(--text-xl);
+  }
+
+  .app-header__title {
+    font-size: 1.25rem;
+  }
+
+  /* Header "New note" collapses its label on very small screens. */
+  .app-header .btn--primary {
+    padding: 0 var(--space-3);
+  }
+
+  .btn,
+  .search__clear {
+    min-height: var(--tap-target);
+  }
+
+  .btn--sm {
+    min-height: 2.5rem;
+  }
+}

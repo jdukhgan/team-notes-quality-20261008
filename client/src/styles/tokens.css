@@ -1,0 +1,150 @@
+/*
+ * Team Notes design tokens — the single source for color, type, space, shape
+ * and motion. Components reference only these custom properties.
+ *
+ * Direction: "quiet notebook". Warm paper neutrals, ink text, one deep teal
+ * accent for primary actions and selection, serif titles for an editorial
+ * reading feel, system sans for controls. No external fonts or services.
+ *
+ * Theme: <html data-theme="light"|"dark"> is always set before first paint by
+ * the inline script in index.html (stored choice, else prefers-color-scheme)
+ * and kept in sync by useTheme(). Light values are the fallback.
+ */
+
+:root {
+  /* Typography */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', 'Liberation Sans', Arial, sans-serif;
+  --font-serif: 'Iowan Old Style', 'Charter', 'Bitstream Charter', 'Source Serif 4', 'Noto Serif', Georgia, 'DejaVu Serif', serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;   /* 12 meta */
+  --text-sm: 0.875rem;  /* 14 secondary, labels */
+  --text-md: 1rem;      /* 16 body, inputs */
+  --text-lg: 1.125rem;  /* 18 list titles */
+  --text-xl: 1.5rem;    /* 24 sheet title */
+  --text-2xl: 1.875rem; /* 30 reading title */
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Space (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+  --border-width: 1px;
+
+  /* Layout */
+  --header-height: 4rem;
+  --list-pane-width: 24rem;
+  --sheet-max-width: 46rem;
+  --control-height: 2.5rem;
+  --tap-target: 2.75rem;
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Light theme (default) */
+  color-scheme: light;
+  --color-bg: #f5f2ec;
+  --color-surface: #fffdf9;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #ece8e0;
+  --color-surface-hover: #efebe3;
+  --color-border: #ddd7cc;
+  --color-border-strong: #8f877a; /* >= 3:1 on surfaces (WCAG 1.4.11) */
+  --color-text: #1d1b18;
+  --color-text-muted: #5b554b;
+  --color-text-subtle: #6f685d;
+  --color-accent: #1d6b64;
+  --color-accent-hover: #165852;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #dfeeea;
+  --color-accent-soft-text: #134a45;
+  --color-selected: #e7f1ee;
+  --color-danger: #a8261c;
+  --color-danger-soft: #fbeae7;
+  --color-danger-border: #e8b4ad;
+  --color-success: #2b6633;
+  --color-success-soft: #e5f1e4;
+  --color-warning: #7d5300;
+  --color-mark-bg: #fbe3a0;
+  --color-mark-text: #1d1b18;
+  --color-focus: #1d6b64;
+  --color-focus-halo: rgb(29 107 100 / 0.25);
+  --color-backdrop: rgb(29 27 24 / 0.45);
+  --shadow-sm: 0 1px 2px rgb(40 34 24 / 0.06), 0 1px 1px rgb(40 34 24 / 0.04);
+  --shadow-md: 0 6px 20px rgb(40 34 24 / 0.08), 0 1px 3px rgb(40 34 24 / 0.06);
+  --shadow-lg: 0 24px 60px rgb(40 34 24 / 0.22);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #151412;
+  --color-surface: #1d1c19;
+  --color-surface-raised: #24221f;
+  --color-surface-sunken: #11100e;
+  --color-surface-hover: #26241f;
+  --color-border: #34312b;
+  --color-border-strong: #7a7366; /* >= 3:1 on surfaces (WCAG 1.4.11) */
+  --color-text: #ece7de;
+  --color-text-muted: #b0a899;
+  --color-text-subtle: #9a9284;
+  --color-accent: #6cc3b8;
+  --color-accent-hover: #86d1c7;
+  --color-accent-contrast: #0c2421;
+  --color-accent-soft: #1c3532;
+  --color-accent-soft-text: #a9e2da;
+  --color-selected: #1f2e2b;
+  --color-danger: #f0a196;
+  --color-danger-soft: #36201c;
+  --color-danger-border: #6e3a33;
+  --color-success: #95d19b;
+  --color-success-soft: #1d2e1f;
+  --color-warning: #e8c27a;
+  --color-mark-bg: #6a5413;
+  --color-mark-text: #fff6dc;
+  --color-focus: #86d1c7;
+  --color-focus-halo: rgb(108 195 184 / 0.3);
+  --color-backdrop: rgb(0 0 0 / 0.6);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.55);
+}
+
+@media (max-width: 47.99rem) {
+  :root {
+    --header-height: 3.5rem;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  :root {
+    --list-pane-width: 19.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+  }
+}

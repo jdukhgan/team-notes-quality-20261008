@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='3' width='24' height='26' rx='5' fill='%231d6b64'/%3E%3Cpath d='M10 11h12M10 16h12M10 21h7' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <title>Team Notes</title>
+    <script>
+      // Resolve the theme before first paint: ?theme= override, stored choice, then system.
+      (function () {
+        var root = document.documentElement;
+        var param = new URLSearchParams(location.search).get('theme');
+        var stored = null;
+        try { stored = localStorage.getItem('team-notes-theme'); } catch (e) {}
+        var choice = param === 'light' || param === 'dark' ? param : stored;
+        var system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.dataset.theme = choice === 'light' || choice === 'dark' ? choice : system;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
